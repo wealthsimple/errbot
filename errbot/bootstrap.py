@@ -91,6 +91,22 @@ def setup_bot(backend_name: str, logger, config, restore=None) -> ErrBot:
             hdlr.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s %(name)-25s %(message)s"))
             logger.addHandler(hdlr)
 
+    if hasattr(config, 'BOT_LOG_LOGSTASH') and config.BOT_LOG_LOGSTASH:
+        try:
+            from logstash_async.handler import AsynchronousLogstashHandler
+            from logstash_async.formatter import LogstashFormatter
+        except ImportError:
+            log.exception(
+                "You have BOT_LOG_LOGSTASH enabled, but I couldn't import modules "
+                "needed for Logstash integration. Did you install python-logstash-async? "
+                "(See https://python-logstash-async.readthedocs.io/en/latest/installation.html for installation instructions)"
+                )
+            exit(-1)
+
+        logger.setFormatter(LogstashFormatter(
+            extra=dict(application='errbot', environment='production')))
+        logger.addHandler(AsynchronousLogstashHandler('127.0.0.1', 5050))
+
     if hasattr(config, 'BOT_LOG_SENTRY') and config.BOT_LOG_SENTRY:
         sentry_integrations = []
 
