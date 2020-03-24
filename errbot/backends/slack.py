@@ -836,7 +836,7 @@ class SlackBackend(ErrBot):
 
         if text[0] == '<' and text[-1] == '>':
             exception_message = 'Unparseable slack ID, should start with U, B, C, G, D or W (got `%s`)'
-            text = text[2:-1]
+            text = text[1:-1]
             if text == '':
                 raise ValueError(exception_message % '')
             if text[0] in ('U', 'B', 'W'):
