@@ -41,6 +41,14 @@ def bot_config_defaults(config):
         config.BOT_ALT_PREFIX_SEPARATORS = ()
     if not hasattr(config, 'BOT_ALT_PREFIX_CASEINSENSITIVE'):
         config.BOT_ALT_PREFIX_CASEINSENSITIVE = False
+    if not hasattr(config, 'BOT_LOG_LOGSTASH_PORT'):
+        config.BOT_LOG_LOGSTASH_PORT = 5050
+    if not hasattr(config, 'BOT_LOG_LOGSTASH_HOST'):
+        config.BOT_LOG_LOGSTASH_HOST = '127.0.0.1'
+    if not hasattr(config, 'BOT_LOG_LOGSTASH_APP'):
+        config.BOT_LOG_LOGSTASH_APP = 'errbot'
+    if not hasattr(config, 'BOT_LOG_LOGSTASH_ENV'):
+        config.BOT_LOG_LOGSTASH_APP = 'development'
     if not hasattr(config, 'DIVERT_TO_PRIVATE'):
         config.DIVERT_TO_PRIVATE = ()
     if not hasattr(config, 'DIVERT_TO_THREAD'):
@@ -104,8 +112,8 @@ def setup_bot(backend_name: str, logger, config, restore=None) -> ErrBot:
             exit(-1)
 
         logger.setFormatter(LogstashFormatter(
-            extra=dict(application='errbot', environment='production')))
-        logger.addHandler(AsynchronousLogstashHandler('127.0.0.1', 5050))
+            extra=dict(application=config.BOT_LOG_LOGSTASH_APP, environment=config.BOT_LOG_LOGSTASH_ENV)))
+        logger.addHandler(AsynchronousLogstashHandler(config.BOT_LOG_LOGSTASH_HOST, config.BOT_LOG_LOGSTASH_PORT))
 
     if hasattr(config, 'BOT_LOG_SENTRY') and config.BOT_LOG_SENTRY:
         sentry_integrations = []
