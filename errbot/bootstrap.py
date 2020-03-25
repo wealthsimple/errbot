@@ -116,8 +116,6 @@ def setup_bot(backend_name: str, logger, config, restore=None) -> ErrBot:
         hdlr.setFormatter(LogstashFormatter(
             extra=dict(application=config.BOT_LOG_LOGSTASH_APP, environment=config.BOT_LOG_LOGSTASH_ENV)))
 
-        # breakpoint()
-
     if hasattr(config, 'BOT_LOG_SENTRY') and config.BOT_LOG_SENTRY:
         sentry_integrations = []
 
