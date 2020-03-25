@@ -41,6 +41,14 @@ def bot_config_defaults(config):
         config.BOT_ALT_PREFIX_SEPARATORS = ()
     if not hasattr(config, 'BOT_ALT_PREFIX_CASEINSENSITIVE'):
         config.BOT_ALT_PREFIX_CASEINSENSITIVE = False
+    if not hasattr(config, 'BOT_LOG_LOGSTASH_PORT'):
+        config.BOT_LOG_LOGSTASH_PORT = 5050
+    if not hasattr(config, 'BOT_LOG_LOGSTASH_HOST'):
+        config.BOT_LOG_LOGSTASH_HOST = '127.0.0.1'
+    if not hasattr(config, 'BOT_LOG_LOGSTASH_APP'):
+        config.BOT_LOG_LOGSTASH_APP = 'errbot'
+    if not hasattr(config, 'BOT_LOG_LOGSTASH_ENV'):
+        config.BOT_LOG_LOGSTASH_APP = 'development'
     if not hasattr(config, 'DIVERT_TO_PRIVATE'):
         config.DIVERT_TO_PRIVATE = ()
     if not hasattr(config, 'DIVERT_TO_THREAD'):
@@ -90,6 +98,22 @@ def setup_bot(backend_name: str, logger, config, restore=None) -> ErrBot:
             hdlr = logging.FileHandler(config.BOT_LOG_FILE)
             hdlr.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s %(name)-25s %(message)s"))
             logger.addHandler(hdlr)
+
+    if hasattr(config, 'BOT_LOG_LOGSTASH') and config.BOT_LOG_LOGSTASH:
+        try:
+            from logstash_async.handler import AsynchronousLogstashHandler
+            from logstash_async.formatter import LogstashFormatter
+        except ImportError:
+            log.exception(
+                "You have BOT_LOG_LOGSTASH enabled, but I couldn't import modules "
+                "needed for Logstash integration. Did you install python-logstash-async? "
+                "(See https://python-logstash-async.readthedocs.io/en/latest/installation.html for installation instructions)"
+                )
+            exit(-1)
+
+        logger.setFormatter(LogstashFormatter(
+            extra=dict(application=config.BOT_LOG_LOGSTASH_APP, environment=config.BOT_LOG_LOGSTASH_ENV)))
+        logger.addHandler(AsynchronousLogstashHandler(config.BOT_LOG_LOGSTASH_HOST, config.BOT_LOG_LOGSTASH_PORT))
 
     if hasattr(config, 'BOT_LOG_SENTRY') and config.BOT_LOG_SENTRY:
         sentry_integrations = []
