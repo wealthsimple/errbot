@@ -48,7 +48,7 @@ def bot_config_defaults(config):
     if not hasattr(config, 'BOT_LOG_LOGSTASH_APP'):
         config.BOT_LOG_LOGSTASH_APP = 'errbot'
     if not hasattr(config, 'BOT_LOG_LOGSTASH_ENV'):
-        config.BOT_LOG_LOGSTASH_APP = 'development'
+        config.BOT_LOG_LOGSTASH_ENV = 'development'
     if not hasattr(config, 'DIVERT_TO_PRIVATE'):
         config.DIVERT_TO_PRIVATE = ()
     if not hasattr(config, 'DIVERT_TO_THREAD'):
@@ -94,7 +94,7 @@ def setup_bot(backend_name: str, logger, config, restore=None) -> ErrBot:
     else:
         format_logs(theme_color=config.TEXT_COLOR_THEME)
 
-        if config.BOT_LOG_FILE:
+        if hasattr(config, 'BOT_LOG_FILE') and config.BOT_LOG_FILE:
             hdlr = logging.FileHandler(config.BOT_LOG_FILE)
             hdlr.setFormatter(logging.Formatter("%(asctime)s %(levelname)-8s %(name)-25s %(message)s"))
             logger.addHandler(hdlr)
@@ -111,9 +111,12 @@ def setup_bot(backend_name: str, logger, config, restore=None) -> ErrBot:
                 )
             exit(-1)
 
-        logger.setFormatter(LogstashFormatter(
+        logger.addHandler(AsynchronousLogstashHandler(config.BOT_LOG_LOGSTASH_HOST, config.BOT_LOG_LOGSTASH_PORT, database_path=None))
+        hdlr = logger.handlers[-1]
+        hdlr.setFormatter(LogstashFormatter(
             extra=dict(application=config.BOT_LOG_LOGSTASH_APP, environment=config.BOT_LOG_LOGSTASH_ENV)))
-        logger.addHandler(AsynchronousLogstashHandler(config.BOT_LOG_LOGSTASH_HOST, config.BOT_LOG_LOGSTASH_PORT))
+
+        # breakpoint()
 
     if hasattr(config, 'BOT_LOG_SENTRY') and config.BOT_LOG_SENTRY:
         sentry_integrations = []
