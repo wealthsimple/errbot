@@ -111,7 +111,7 @@ def setup_bot(backend_name: str, logger, config, restore=None) -> ErrBot:
                 )
             exit(-1)
 
-        logger.addHandler(AsynchronousLogstashHandler(config.BOT_LOG_LOGSTASH_HOST, config.BOT_LOG_LOGSTASH_PORT, database_path=None))
+        logger.addHandler(AsynchronousLogstashHandler(config.BOT_LOG_LOGSTASH_HOST, int(config.BOT_LOG_LOGSTASH_PORT), database_path=None))
         hdlr = logger.handlers[-1]
         hdlr.setFormatter(LogstashFormatter(
             extra=dict(application=config.BOT_LOG_LOGSTASH_APP, environment=config.BOT_LOG_LOGSTASH_ENV)))
